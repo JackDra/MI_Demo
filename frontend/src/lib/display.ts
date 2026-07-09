@@ -16,11 +16,17 @@ export function notificationSeverityForRegion(
   region: Region,
   notifications: Notification[]
 ): Severity {
-  const regionNotifications = notifications.filter((item) => item.region_id === region.id);
+  const regionNotifications = notifications.filter(
+    (item) => item.region_id === region.id
+  );
   if (regionNotifications.length === 0) return 'green';
-  return regionNotifications.reduce<Severity>((highest, item) =>
-    severityRank[item.severity] > severityRank[highest] ? item.severity : highest
-  , 'green');
+  return regionNotifications.reduce<Severity>(
+    (highest, item) =>
+      severityRank[item.severity] > severityRank[highest]
+        ? item.severity
+        : highest,
+    'green'
+  );
 }
 
 export function formatDateTime(value: string | null | undefined): string {

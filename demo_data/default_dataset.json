@@ -7,8 +7,8 @@
       "slug": "griffith-west",
       "name": "Griffith West Channel",
       "summary": "Gate adjustment scheduled soon.",
-      "map_x": 0.32,
-      "map_y": 0.58,
+      "map_x": 0.464,
+      "map_y": 0.465,
       "gps_lat": -34.287,
       "gps_lng": 146.036,
       "display": { "sceneTint": "#6f9f52" },
@@ -86,8 +86,8 @@
       "slug": "leeton-delivery",
       "name": "Leeton Delivery Zone",
       "summary": "Abnormal downstream sensor reading.",
-      "map_x": 0.62,
-      "map_y": 0.39,
+      "map_x": 0.813,
+      "map_y": 0.922,
       "gps_lat": -34.552,
       "gps_lng": 146.404,
       "display": { "sceneTint": "#b8504c" },
@@ -165,8 +165,8 @@
       "slug": "yanco-main",
       "name": "Yanco Main Channel",
       "summary": "Normal flow and storage levels.",
-      "map_x": 0.48,
-      "map_y": 0.47,
+      "map_x": 0.817,
+      "map_y": 0.96,
       "gps_lat": -34.615,
       "gps_lng": 146.409,
       "display": { "sceneTint": "#4e9f6d" },
@@ -209,8 +209,8 @@
       "slug": "coleambally-edge",
       "name": "Coleambally Edge Area",
       "summary": "Vegetation inspection due.",
-      "map_x": 0.76,
-      "map_y": 0.69,
+      "map_x": 0.319,
+      "map_y": 0.96,
       "gps_lat": -34.805,
       "gps_lng": 145.883,
       "display": { "sceneTint": "#a88f43" },
@@ -252,6 +252,85 @@
           "last_inspection_at": "2026-05-22T00:00:00Z",
           "next_inspection_at": "2026-07-09T00:00:00Z",
           "notes": "Inspection due today."
+        }
+      ]
+    },
+    {
+      "slug": "narrandera-supply",
+      "name": "Narrandera Supply Reach",
+      "summary": "Flow trending below target.",
+      "map_x": 0.63,
+      "map_y": 0.77,
+      "gps_lat": -34.747,
+      "gps_lng": 146.553,
+      "display": { "sceneTint": "#c6a64d" },
+      "river_sections": [
+        {
+          "name": "Narrandera Supply Channel",
+          "start_x": -4.4,
+          "start_y": 0.8,
+          "end_x": 4.4,
+          "end_y": -0.6,
+          "flow_rate_ml_per_day": 84,
+          "target_flow_rate_ml_per_day": 112,
+          "water_level_m": 1.3,
+          "absorption_rate_percent": 5.9,
+          "evaporation_rate_mm_per_day": 6.8,
+          "display": { "width": 2.1 }
+        }
+      ],
+      "gates": [
+        {
+          "name": "Narrandera Intake Gate",
+          "asset_id": "GATE-NAR-006",
+          "x": -1.1,
+          "y": 0.4,
+          "state": "partial",
+          "opening_percent": 58,
+          "planned_action": null,
+          "planned_for": null,
+          "model": "MI-Gate-Compact-A",
+          "next_inspection_at": "2026-07-24T09:00:00Z",
+          "metadata_json": { "installed": "2020-08-14", "last_command": "Hold at 58 percent" }
+        }
+      ],
+      "sensors": [
+        {
+          "name": "Narrandera Flow Sensor",
+          "sensor_id": "SNS-NAR-FLOW-1",
+          "sensor_type": "flow",
+          "x": 1.7,
+          "y": -0.2,
+          "reading": 84,
+          "unit": "ML/day",
+          "health": "normal",
+          "last_updated_at": "2026-07-09T08:05:00Z",
+          "calibration_due_at": "2026-09-15T00:00:00Z",
+          "next_inspection_at": "2026-08-18T00:00:00Z",
+          "metadata_json": { "battery": "wired" }
+        }
+      ],
+      "reservoirs": [
+        {
+          "name": "Narrandera Balancing Storage",
+          "x": -3.1,
+          "y": -1.2,
+          "capacity_ml": 680,
+          "current_amount_ml": 405,
+          "percent_filled": 59.6,
+          "low_threshold_percent": 25,
+          "metadata_json": { "forecast": "stable" }
+        }
+      ],
+      "vegetation_zones": [
+        {
+          "name": "Narrandera North Bank",
+          "x": 2.6,
+          "y": 1.1,
+          "risk_level": "green",
+          "last_inspection_at": "2026-06-27T00:00:00Z",
+          "next_inspection_at": "2026-08-01T00:00:00Z",
+          "notes": "Access clear."
         }
       ]
     }

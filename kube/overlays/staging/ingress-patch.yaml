@@ -5,10 +5,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - staging.mi-demo.jackdra.com
+        - staging.mi.jackdra.com
       secretName: mi-demo-tls
   rules:
-    - host: staging.mi-demo.jackdra.com
+    - host: staging.mi.jackdra.com
       http:
         paths:
           - path: /api

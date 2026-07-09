@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import HTTPException, Query, status
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -16,6 +18,7 @@ from app.models import (
     Severity,
     VersionResponse,
 )
+from app.supabase_service import MapAsset
 
 
 def register_routes(happ: HApp) -> None:
@@ -41,6 +44,23 @@ def register_routes(happ: HApp) -> None:
     @happ.app.get("/api/dashboard")
     def dashboard() -> DashboardPayload:
         return happ.demo_service.get_dashboard()
+
+    @happ.app.get("/api/assets/topographic-map")
+    def topographic_map_asset() -> MapAsset:
+        map_path = (
+            Path(__file__).resolve().parents[2]
+            / "frontend"
+            / "static"
+            / "maps"
+            / "murrumbidgee-opentopomap-z10.png"
+        )
+        try:
+            return happ.supabase_service.ensure_topographic_map_asset(map_path)
+        except (FileNotFoundError, RuntimeError) as exc:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=str(exc),
+            ) from exc
 
     @happ.app.get("/api/regions/{region_id}")
     def get_region(region_id: int) -> Region:
@@ -90,21 +110,9 @@ def register_routes(happ: HApp) -> None:
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
-    @happ.app.get("/api/demo-datasets/template")
-    def get_dataset_template() -> dict[str, object]:
-        return happ.demo_service.load_template_payload()
-
-    @happ.app.post("/api/demo-datasets/import-template")
-    def import_template_dataset() -> DemoDataset:
-        return happ.demo_service.import_template_dataset()
-
     @happ.app.post("/api/demo-datasets/{dataset_id}/activate")
     def activate_dataset(dataset_id: int) -> DemoDataset:
         dataset = happ.demo_service.activate_dataset(dataset_id)
         if dataset is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Dataset not found")
         return dataset
-
-    @happ.app.post("/api/demo-datasets/reset")
-    def reset_dataset() -> DemoDataset:
-        return happ.demo_service.reset_seed_dataset()

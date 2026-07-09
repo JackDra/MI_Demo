@@ -47,13 +47,28 @@ export interface DashboardPayload {
   summary: {
     active_dataset_id: number | null;
     region_count: number;
+    location_count: number;
     notification_count: number;
     red_count: number;
     yellow_count: number;
     green_count: number;
   };
   regions: Region[];
+  locations: DashboardLocation[];
   notifications: Notification[];
+}
+
+export type LocationType = 'river_section' | 'reservoir';
+
+export interface DashboardLocation {
+  type: LocationType;
+  id: number;
+  region_id: number;
+  label: string;
+  summary: string;
+  map_x: number;
+  map_y: number;
+  severity: Severity;
 }
 
 export interface RiverSection {
@@ -67,6 +82,7 @@ export interface RiverSection {
   flow_rate_ml_per_day: number;
   target_flow_rate_ml_per_day: number;
   water_level_m: number;
+  percent_filled: number | null;
   absorption_rate_percent: number;
   evaporation_rate_mm_per_day: number;
   display: Record<string, unknown>;
@@ -85,6 +101,7 @@ export interface Gate {
   planned_for: string | null;
   model: string | null;
   next_inspection_at: string | null;
+  metadata_json: Record<string, unknown>;
 }
 
 export interface Sensor {
@@ -101,6 +118,7 @@ export interface Sensor {
   last_updated_at: string;
   calibration_due_at: string | null;
   next_inspection_at: string | null;
+  metadata_json: Record<string, unknown>;
 }
 
 export interface Reservoir {
@@ -113,6 +131,7 @@ export interface Reservoir {
   current_amount_ml: number;
   percent_filled: number;
   low_threshold_percent: number;
+  metadata_json: Record<string, unknown>;
 }
 
 export interface VegetationZone {
@@ -145,8 +164,7 @@ export interface ComponentDetail {
 }
 
 export type SelectableComponent =
-  | { type: 'river_section'; id: number; label: string }
+  | { type: LocationType; id: number; label: string }
   | { type: 'gate'; id: number; label: string }
   | { type: 'sensor'; id: number; label: string }
-  | { type: 'reservoir'; id: number; label: string }
   | { type: 'vegetation_zone'; id: number; label: string };

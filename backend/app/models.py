@@ -80,6 +80,7 @@ class RiverSection(SQLModel, table=True):
     flow_rate_ml_per_day: float
     target_flow_rate_ml_per_day: float
     water_level_m: float
+    percent_filled: float | None = Field(default=None, nullable=True)
     absorption_rate_percent: float
     evaporation_rate_mm_per_day: float
     display: dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON, nullable=False))
@@ -204,16 +205,29 @@ class DemoDatasetUpload(SQLModel):
 class DashboardSummary(SQLModel):
     active_dataset_id: int | None
     region_count: int
+    location_count: int
     notification_count: int
     red_count: int
     yellow_count: int
     green_count: int
 
 
+class DashboardLocation(SQLModel):
+    type: str
+    id: int
+    region_id: int
+    label: str
+    summary: str
+    map_x: float
+    map_y: float
+    severity: Severity
+
+
 class DashboardPayload(SQLModel):
     dataset: DemoDataset | None
     summary: DashboardSummary
     regions: list[Region]
+    locations: list[DashboardLocation]
     notifications: list[Notification]
 
 

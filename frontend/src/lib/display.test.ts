@@ -38,9 +38,12 @@ function notification(severity: Notification['severity']): Notification {
 
 describe('notificationSeverityForRegion', () => {
   it('returns highest region severity', () => {
-    expect(notificationSeverityForRegion(region, [notification('green'), notification('red')])).toBe(
-      'red'
-    );
+    expect(
+      notificationSeverityForRegion(region, [
+        notification('green'),
+        notification('red')
+      ])
+    ).toBe('red');
   });
 
   it('defaults to green', () => {

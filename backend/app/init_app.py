@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import create_app_engine
 from app.services import DemoService
+from app.supabase_service import SupabaseService
 
 APP_NAME = "MI Demo API"
 APP_VERSION = "0.1.0"
@@ -16,6 +17,7 @@ APP_VERSION = "0.1.0"
 class HApp:
     app: FastAPI
     demo_service: DemoService
+    supabase_service: SupabaseService
 
 
 def _cors_origins() -> list[str]:
@@ -33,8 +35,9 @@ def build_backend(engine: Any | None = None) -> HApp:
         allow_headers=["*"],
     )
     demo_service = DemoService(engine=engine or create_app_engine())
+    supabase_service = SupabaseService.from_env()
     demo_service.ensure_schema()
-    happ = HApp(app=app, demo_service=demo_service)
+    happ = HApp(app=app, demo_service=demo_service, supabase_service=supabase_service)
 
     from app.routes import register_routes
 

@@ -1,18 +1,39 @@
 import { env } from '$env/dynamic/public';
-import type { ComponentDetail, DashboardPayload, DemoDataset, ScenePayload } from './types';
+import type {
+  ComponentDetail,
+  DashboardPayload,
+  DemoDataset,
+  ScenePayload
+} from './types';
+
+type Fetcher = typeof fetch;
+
+export type MapAsset = {
+  url: string;
+  storage_bucket: string | null;
+  storage_path: string | null;
+  source: string;
+};
 
 const configuredBase = env.PUBLIC_API_BASE_URL?.replace(/\/$/, '');
 
 function apiBase(): string {
   if (configuredBase) return configuredBase;
-  if (typeof window !== 'undefined' && window.location.hostname === '127.0.0.1') {
+  if (typeof window === 'undefined') {
+    return 'http://127.0.0.1:8000';
+  }
+  if (window.location.hostname === '127.0.0.1') {
     return 'http://127.0.0.1:8000';
   }
   return '';
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${apiBase()}${path}`, {
+async function request<T>(
+  path: string,
+  init?: RequestInit,
+  fetcher: Fetcher = fetch
+): Promise<T> {
+  const response = await fetcher(`${apiBase()}${path}`, {
     ...init,
     headers: {
       'content-type': 'application/json',
@@ -26,28 +47,35 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T;
 }
 
-export function getDashboard(): Promise<DashboardPayload> {
-  return request<DashboardPayload>('/api/dashboard');
+export function getDashboard(fetcher?: Fetcher): Promise<DashboardPayload> {
+  return request<DashboardPayload>('/api/dashboard', undefined, fetcher);
 }
 
-export function getRegionScene(regionId: number): Promise<ScenePayload> {
-  return request<ScenePayload>(`/api/regions/${regionId}/scene`);
+export function getTopographicMapAsset(fetcher?: Fetcher): Promise<MapAsset> {
+  return request<MapAsset>('/api/assets/topographic-map', undefined, fetcher);
 }
 
-export function getComponentDetail(type: string, id: number): Promise<ComponentDetail> {
-  return request<ComponentDetail>(`/api/components/${type}/${id}`);
+export function getRegionScene(
+  regionId: number,
+  fetcher?: Fetcher
+): Promise<ScenePayload> {
+  return request<ScenePayload>(
+    `/api/regions/${regionId}/scene`,
+    undefined,
+    fetcher
+  );
 }
 
-export function resetDataset(): Promise<DemoDataset> {
-  return request<DemoDataset>('/api/demo-datasets/reset', { method: 'POST' });
-}
-
-export function importTemplateDataset(): Promise<DemoDataset> {
-  return request<DemoDataset>('/api/demo-datasets/import-template', { method: 'POST' });
-}
-
-export function getDatasetTemplate(): Promise<unknown> {
-  return request<unknown>('/api/demo-datasets/template');
+export function getComponentDetail(
+  type: string,
+  id: number,
+  fetcher?: Fetcher
+): Promise<ComponentDetail> {
+  return request<ComponentDetail>(
+    `/api/components/${type}/${id}`,
+    undefined,
+    fetcher
+  );
 }
 
 export function uploadDataset(data: unknown): Promise<DemoDataset> {

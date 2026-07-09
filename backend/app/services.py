@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
-from sqlalchemy import delete, text
+from sqlalchemy import delete, inspect, text
 from sqlalchemy.engine import Engine
 from sqlmodel import Session, col, select
 
 from app.models import (
     ComponentDetail,
+    DashboardLocation,
     DashboardPayload,
     DashboardSummary,
     DemoDataset,
@@ -52,17 +51,11 @@ class DemoService:
         from sqlmodel import SQLModel
 
         SQLModel.metadata.create_all(self.engine)
+        self._ensure_optional_columns()
 
     def check_database(self) -> None:
         with self.engine.connect() as connection:
             connection.execute(text("select 1"))
-
-    def load_template_payload(self) -> dict[str, Any]:
-        seed_path = Path(__file__).resolve().parents[2] / "demo_data" / "default_dataset.json"
-        return cast(dict[str, Any], json.loads(seed_path.read_text(encoding="utf-8")))
-
-    def import_template_dataset(self) -> DemoDataset:
-        return self.upload_dataset_to_supabase(self.load_template_payload())
 
     def upload_dataset_to_supabase(self, payload: dict[str, Any]) -> DemoDataset:
         name = str(payload.get("name") or "Uploaded Demo Dataset")
@@ -113,9 +106,6 @@ class DemoService:
             session.refresh(target)
             return target
 
-    def reset_seed_dataset(self) -> DemoDataset:
-        return self.import_template_dataset()
-
     def get_active_dataset(self, session: Session) -> DemoDataset | None:
         return session.exec(select(DemoDataset).where(DemoDataset.is_active)).first()
 
@@ -128,12 +118,14 @@ class DemoService:
                     summary=DashboardSummary(
                         active_dataset_id=None,
                         region_count=0,
+                        location_count=0,
                         notification_count=0,
                         red_count=0,
                         yellow_count=0,
                         green_count=0,
                     ),
                     regions=[],
+                    locations=[],
                     notifications=[],
                 )
 
@@ -141,9 +133,11 @@ class DemoService:
                 session.exec(select(Region).where(Region.dataset_id == dataset.id)).all()
             )
             notifications = self._list_notifications(session, dataset.id)
+            locations = self._dashboard_locations(session, dataset.id, regions, notifications)
             summary = DashboardSummary(
                 active_dataset_id=dataset.id,
                 region_count=len(regions),
+                location_count=len(locations),
                 notification_count=len(notifications),
                 red_count=sum(1 for item in notifications if item.severity == Severity.red),
                 yellow_count=sum(1 for item in notifications if item.severity == Severity.yellow),
@@ -153,6 +147,7 @@ class DemoService:
                 dataset=dataset,
                 summary=summary,
                 regions=regions,
+                locations=locations,
                 notifications=notifications,
             )
 
@@ -300,6 +295,11 @@ class DemoService:
                         flow_rate_ml_per_day=float(item["flow_rate_ml_per_day"]),
                         target_flow_rate_ml_per_day=float(item["target_flow_rate_ml_per_day"]),
                         water_level_m=float(item["water_level_m"]),
+                        percent_filled=(
+                            float(item["percent_filled"])
+                            if item.get("percent_filled") is not None
+                            else None
+                        ),
                         absorption_rate_percent=float(item["absorption_rate_percent"]),
                         evaporation_rate_mm_per_day=float(item["evaporation_rate_mm_per_day"]),
                         display=dict(item.get("display") or {}),
@@ -515,6 +515,7 @@ class DemoService:
         local_y: float,
         predicted_for: datetime | None = None,
     ) -> Notification:
+        map_x, map_y = self._map_point(region, local_x, local_y)
         return Notification(
             dataset_id=dataset_id,
             region_id=region.id,
@@ -524,8 +525,8 @@ class DemoService:
             generated_from=generated_from,
             source_entity_type=source_entity_type,
             source_entity_id=source_entity_id,
-            map_x=min(0.96, max(0.04, region.map_x + local_x * 0.012)),
-            map_y=min(0.96, max(0.04, region.map_y - local_y * 0.012)),
+            map_x=map_x,
+            map_y=map_y,
             prediction_horizon="current-state",
             prediction_method="deterministic-demo-rule",
             predicted_for=predicted_for,
@@ -541,12 +542,112 @@ class DemoService:
             ).all()
         )
 
+    def _dashboard_locations(
+        self,
+        session: Session,
+        dataset_id: int,
+        regions: list[Region],
+        notifications: list[Notification],
+    ) -> list[DashboardLocation]:
+        regions_by_id = {region.id: region for region in regions if region.id is not None}
+        locations: list[DashboardLocation] = []
+
+        for river in session.exec(
+            select(RiverSection).where(RiverSection.dataset_id == dataset_id)
+        ).all():
+            region = regions_by_id.get(river.region_id)
+            if region is None or river.id is None or region.id is None:
+                continue
+            map_x, map_y = self._map_point(
+                region,
+                (river.start_x + river.end_x) / 2,
+                (river.start_y + river.end_y) / 2,
+            )
+            locations.append(
+                DashboardLocation(
+                    type="river_section",
+                    id=river.id,
+                    region_id=region.id,
+                    label=river.name,
+                    summary=(
+                        f"{river.flow_rate_ml_per_day:.0f} ML/day flow, "
+                        f"target {river.target_flow_rate_ml_per_day:.0f}"
+                    ),
+                    map_x=map_x,
+                    map_y=map_y,
+                    severity=self._dashboard_location_severity(
+                        "river_section",
+                        river.id,
+                        region.id,
+                        notifications,
+                    ),
+                )
+            )
+
+        for reservoir in session.exec(
+            select(Reservoir).where(Reservoir.dataset_id == dataset_id)
+        ).all():
+            region = regions_by_id.get(reservoir.region_id)
+            if region is None or reservoir.id is None or region.id is None:
+                continue
+            map_x, map_y = self._map_point(region, reservoir.x, reservoir.y)
+            locations.append(
+                DashboardLocation(
+                    type="reservoir",
+                    id=reservoir.id,
+                    region_id=region.id,
+                    label=reservoir.name,
+                    summary=(
+                        f"{reservoir.percent_filled:.1f}% full, "
+                        f"{reservoir.current_amount_ml:.0f} ML stored"
+                    ),
+                    map_x=map_x,
+                    map_y=map_y,
+                    severity=self._dashboard_location_severity(
+                        "reservoir",
+                        reservoir.id,
+                        region.id,
+                        notifications,
+                    ),
+                )
+            )
+
+        return sorted(locations, key=lambda location: (location.map_y, location.map_x))
+
+    def _dashboard_location_severity(
+        self,
+        source_entity_type: str,
+        source_entity_id: int,
+        region_id: int,
+        notifications: list[Notification],
+    ) -> Severity:
+        severity = Severity.green
+        rank = {Severity.green: 0, Severity.yellow: 1, Severity.red: 2}
+        for notification in notifications:
+            matches_entity = (
+                notification.source_entity_type == source_entity_type
+                and notification.source_entity_id == source_entity_id
+            )
+            if (
+                (matches_entity or notification.region_id == region_id)
+                and rank[notification.severity] > rank[severity]
+            ):
+                severity = notification.severity
+        return severity
+
+    def _map_point(self, region: Region, local_x: float, local_y: float) -> tuple[float, float]:
+        return (
+            min(0.96, max(0.04, region.map_x + local_x * 0.012)),
+            min(0.96, max(0.04, region.map_y - local_y * 0.012)),
+        )
+
     def _component_metrics(self, component_type: str, component: Any) -> dict[str, Any]:
         if component_type == "river_section":
             return {
                 "flow_rate_ml_per_day": component.flow_rate_ml_per_day,
                 "target_flow_rate_ml_per_day": component.target_flow_rate_ml_per_day,
                 "water_level_m": component.water_level_m,
+                "percent_filled": self._river_fill_percent(component),
                 "absorption_rate_percent": component.absorption_rate_percent,
                 "evaporation_rate_mm_per_day": component.evaporation_rate_mm_per_day,
             }
@@ -571,3 +672,30 @@ class DemoService:
                 "percent_filled": component.percent_filled,
             }
         return {"risk_level": getattr(component, "risk_level", None)}
+
+    def _ensure_optional_columns(self) -> None:
+        inspector = inspect(self.engine)
+        if not inspector.has_table("river_section"):
+            return
+        column_names = {
+            column["name"] for column in inspector.get_columns("river_section")
+        }
+        if "percent_filled" in column_names:
+            return
+        with self.engine.begin() as connection:
+            connection.execute(text("alter table river_section add column percent_filled float"))
+
+    def _river_fill_percent(self, river: RiverSection) -> float:
+        if river.percent_filled is not None:
+            return min(100.0, max(0.0, river.percent_filled))
+
+        display_fill_percent = river.display.get("percent_filled") or river.display.get(
+            "fill_percent"
+        )
+        if isinstance(display_fill_percent, int | float):
+            return min(100.0, max(0.0, float(display_fill_percent)))
+
+        max_water_level = river.display.get("max_water_level_m", 2)
+        if not isinstance(max_water_level, int | float) or max_water_level <= 0:
+            return 0.0
+        return min(100.0, max(0.0, river.water_level_m / float(max_water_level) * 100))
