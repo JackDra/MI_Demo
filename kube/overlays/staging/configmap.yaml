@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mi-demo-config
+data:
+  APP_ENV: staging
+  PUBLIC_API_BASE_URL: ""
+  FRONTEND_ORIGINS: https://staging.mi-demo.jackdra.com
+  SQL_ECHO: "false"

@@ -1,0 +1,259 @@
+{
+  "name": "MI Demo Seed",
+  "version": "0.1",
+  "description": "Fictional Murrumbidgee Irrigation control-panel demo data.",
+  "regions": [
+    {
+      "slug": "griffith-west",
+      "name": "Griffith West Channel",
+      "summary": "Gate adjustment scheduled soon.",
+      "map_x": 0.32,
+      "map_y": 0.58,
+      "gps_lat": -34.287,
+      "gps_lng": 146.036,
+      "display": { "sceneTint": "#6f9f52" },
+      "river_sections": [
+        {
+          "name": "Griffith West Main",
+          "start_x": -4.5,
+          "start_y": -1.6,
+          "end_x": 4.8,
+          "end_y": 1.4,
+          "flow_rate_ml_per_day": 91,
+          "target_flow_rate_ml_per_day": 100,
+          "water_level_m": 1.7,
+          "absorption_rate_percent": 4.8,
+          "evaporation_rate_mm_per_day": 6.1,
+          "display": { "width": 2.4 }
+        }
+      ],
+      "gates": [
+        {
+          "name": "GW Regulator 4",
+          "asset_id": "GATE-GW-004",
+          "x": 0.4,
+          "y": 0.1,
+          "state": "scheduled",
+          "opening_percent": 40,
+          "planned_action": "Open to 65 percent",
+          "planned_for": "2026-07-09T14:30:00Z",
+          "model": "MI-Gate-Compact-A",
+          "next_inspection_at": "2026-07-16T09:00:00Z",
+          "metadata_json": { "installed": "2021-04-02", "last_command": "Hold at 40 percent" }
+        }
+      ],
+      "sensors": [
+        {
+          "name": "GW Flow Sensor",
+          "sensor_id": "SNS-GW-FLOW-1",
+          "sensor_type": "flow",
+          "x": -1.8,
+          "y": -0.7,
+          "reading": 91,
+          "unit": "ML/day",
+          "health": "normal",
+          "last_updated_at": "2026-07-09T08:00:00Z",
+          "calibration_due_at": "2026-08-12T00:00:00Z",
+          "next_inspection_at": "2026-08-20T00:00:00Z",
+          "metadata_json": { "battery": "wired" }
+        }
+      ],
+      "reservoirs": [
+        {
+          "name": "West Balancing Storage",
+          "x": -3.5,
+          "y": 1.1,
+          "capacity_ml": 820,
+          "current_amount_ml": 560,
+          "percent_filled": 68,
+          "low_threshold_percent": 25,
+          "metadata_json": { "embankment": "normal" }
+        }
+      ],
+      "vegetation_zones": [
+        {
+          "name": "North Bank Access Track",
+          "x": 2.8,
+          "y": 1.2,
+          "risk_level": "yellow",
+          "last_inspection_at": "2026-06-04T00:00:00Z",
+          "next_inspection_at": "2026-07-12T00:00:00Z",
+          "notes": "Reeds close to service path."
+        }
+      ]
+    },
+    {
+      "slug": "leeton-delivery",
+      "name": "Leeton Delivery Zone",
+      "summary": "Abnormal downstream sensor reading.",
+      "map_x": 0.62,
+      "map_y": 0.39,
+      "gps_lat": -34.552,
+      "gps_lng": 146.404,
+      "display": { "sceneTint": "#b8504c" },
+      "river_sections": [
+        {
+          "name": "Leeton Delivery Channel",
+          "start_x": -4.6,
+          "start_y": 1.3,
+          "end_x": 4.6,
+          "end_y": -1.1,
+          "flow_rate_ml_per_day": 63,
+          "target_flow_rate_ml_per_day": 92,
+          "water_level_m": 1.2,
+          "absorption_rate_percent": 8.4,
+          "evaporation_rate_mm_per_day": 7.8,
+          "display": { "width": 2.1 }
+        }
+      ],
+      "gates": [
+        {
+          "name": "Leeton South Gate",
+          "asset_id": "GATE-LTN-012",
+          "x": 1.6,
+          "y": -0.4,
+          "state": "partial",
+          "opening_percent": 52,
+          "planned_action": null,
+          "planned_for": null,
+          "model": "MI-Gate-Wide-B",
+          "next_inspection_at": "2026-07-22T09:00:00Z",
+          "metadata_json": { "installed": "2019-11-19" }
+        }
+      ],
+      "sensors": [
+        {
+          "name": "Downstream Level Sensor",
+          "sensor_id": "SNS-LTN-LVL-7",
+          "sensor_type": "water level",
+          "x": 3.2,
+          "y": -1.0,
+          "reading": 0.72,
+          "unit": "m",
+          "health": "critical",
+          "last_updated_at": "2026-07-09T07:48:00Z",
+          "calibration_due_at": "2026-07-30T00:00:00Z",
+          "next_inspection_at": "2026-07-10T00:00:00Z",
+          "metadata_json": { "battery": "42%", "signal": "intermittent" }
+        }
+      ],
+      "reservoirs": [
+        {
+          "name": "Leeton Buffer Reservoir",
+          "x": -2.7,
+          "y": 1.4,
+          "capacity_ml": 610,
+          "current_amount_ml": 121,
+          "percent_filled": 19.8,
+          "low_threshold_percent": 25,
+          "metadata_json": { "forecast": "falling" }
+        }
+      ],
+      "vegetation_zones": [
+        {
+          "name": "Sensor Access Bend",
+          "x": 2.2,
+          "y": 1.1,
+          "risk_level": "green",
+          "last_inspection_at": "2026-07-01T00:00:00Z",
+          "next_inspection_at": "2026-08-04T00:00:00Z",
+          "notes": "Access clear."
+        }
+      ]
+    },
+    {
+      "slug": "yanco-main",
+      "name": "Yanco Main Channel",
+      "summary": "Normal flow and storage levels.",
+      "map_x": 0.48,
+      "map_y": 0.47,
+      "gps_lat": -34.615,
+      "gps_lng": 146.409,
+      "display": { "sceneTint": "#4e9f6d" },
+      "river_sections": [
+        {
+          "name": "Yanco Main",
+          "start_x": -4.8,
+          "start_y": 0,
+          "end_x": 4.8,
+          "end_y": 0,
+          "flow_rate_ml_per_day": 122,
+          "target_flow_rate_ml_per_day": 120,
+          "water_level_m": 1.9,
+          "absorption_rate_percent": 3.2,
+          "evaporation_rate_mm_per_day": 5.4,
+          "display": { "width": 2.6 }
+        }
+      ],
+      "gates": [],
+      "sensors": [
+        {
+          "name": "Yanco Flow Sensor",
+          "sensor_id": "SNS-YNC-FLOW-1",
+          "sensor_type": "flow",
+          "x": 0,
+          "y": 0.9,
+          "reading": 122,
+          "unit": "ML/day",
+          "health": "normal",
+          "last_updated_at": "2026-07-09T08:02:00Z",
+          "calibration_due_at": "2026-10-01T00:00:00Z",
+          "next_inspection_at": "2026-09-10T00:00:00Z",
+          "metadata_json": { "battery": "wired" }
+        }
+      ],
+      "reservoirs": [],
+      "vegetation_zones": []
+    },
+    {
+      "slug": "coleambally-edge",
+      "name": "Coleambally Edge Area",
+      "summary": "Vegetation inspection due.",
+      "map_x": 0.76,
+      "map_y": 0.69,
+      "gps_lat": -34.805,
+      "gps_lng": 145.883,
+      "display": { "sceneTint": "#a88f43" },
+      "river_sections": [
+        {
+          "name": "Coleambally Spur",
+          "start_x": -4.2,
+          "start_y": -1.2,
+          "end_x": 4.3,
+          "end_y": 1.0,
+          "flow_rate_ml_per_day": 76,
+          "target_flow_rate_ml_per_day": 81,
+          "water_level_m": 1.4,
+          "absorption_rate_percent": 5.1,
+          "evaporation_rate_mm_per_day": 6.5,
+          "display": { "width": 2.0 }
+        }
+      ],
+      "gates": [],
+      "sensors": [],
+      "reservoirs": [
+        {
+          "name": "Coleambally Header Storage",
+          "x": -2.6,
+          "y": -1.0,
+          "capacity_ml": 740,
+          "current_amount_ml": 390,
+          "percent_filled": 52.7,
+          "low_threshold_percent": 25,
+          "metadata_json": { "forecast": "stable" }
+        }
+      ],
+      "vegetation_zones": [
+        {
+          "name": "Eastern Bank Vegetation",
+          "x": 1.8,
+          "y": 1.2,
+          "risk_level": "yellow",
+          "last_inspection_at": "2026-05-22T00:00:00Z",
+          "next_inspection_at": "2026-07-09T00:00:00Z",
+          "notes": "Inspection due today."
+        }
+      ]
+    }
+  ]
+}

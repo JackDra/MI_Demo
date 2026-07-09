@@ -1,0 +1,60 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: mi-demo-backend
+    restart: unless-stopped
+    environment:
+      APP_ENV: dev
+      DATABASE_URL: postgresql+psycopg://mi_demo:mi_demo@postgres:5432/mi_demo
+      FRONTEND_ORIGINS: http://127.0.0.1:3300,http://localhost:3300
+      WEB_CONCURRENCY: "1"
+    ports:
+      - "8300:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["sh", "-c", "alembic upgrade head && backend serve"]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: mi-demo-frontend
+    restart: unless-stopped
+    environment:
+      PUBLIC_API_BASE_URL: http://127.0.0.1:8300
+    ports:
+      - "3300:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16
+    container_name: mi-demo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mi_demo
+      POSTGRES_USER: mi_demo
+      POSTGRES_PASSWORD: mi_demo
+    ports:
+      - "57432:5432"
+    volumes:
+      - mi_demo_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mi_demo -d mi_demo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mi_demo_postgres_data:
