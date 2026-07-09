@@ -16,12 +16,13 @@ export type MapAsset = {
 };
 
 const configuredBase = env.PUBLIC_API_BASE_URL?.replace(/\/$/, '');
+const internalBase = process.env.INTERNAL_API_BASE_URL?.replace(/\/$/, '');
 
 function apiBase(): string {
-  if (configuredBase) return configuredBase;
   if (typeof window === 'undefined') {
-    return 'http://127.0.0.1:8000';
+    return internalBase || configuredBase || 'http://127.0.0.1:8000';
   }
+  if (configuredBase) return configuredBase;
   if (window.location.hostname === '127.0.0.1') {
     return 'http://127.0.0.1:8000';
   }

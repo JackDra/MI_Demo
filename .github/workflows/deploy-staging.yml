@@ -88,6 +88,7 @@ jobs:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       SUPABASE_STORAGE_BUCKET: ${{ secrets.SUPABASE_STORAGE_BUCKET || 'mi-demo-assets' }}
+      INTERNAL_API_BASE_URL: http://backend:8000
       PUBLIC_API_BASE_URL: ""
       SQL_ECHO: "false"
 
@@ -123,6 +124,7 @@ jobs:
           kubectl create configmap mi-demo-config \
             --namespace "$KUBE_NAMESPACE" \
             --from-literal APP_ENV="$APP_ENV" \
+            --from-literal INTERNAL_API_BASE_URL="$INTERNAL_API_BASE_URL" \
             --from-literal PUBLIC_API_BASE_URL="$PUBLIC_API_BASE_URL" \
             --from-literal FRONTEND_ORIGINS="https://$APP_URL" \
             --from-literal SQL_ECHO="$SQL_ECHO" \
